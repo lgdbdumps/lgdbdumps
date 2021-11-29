@@ -56,7 +56,7 @@ jobs:
         with:
           python-version: 3.8
       - name: run python script
-        run: python write_html
+        run: python write_html.py
         
       - name: IPFS Setup Action
         uses: ibnesayeed/setup-ipfs@0.6.0
@@ -67,7 +67,7 @@ jobs:
         run: |
           cid="$(ipfs add -Q "${{ env.WEB_PAGE_OUTPUT_FILE }}" )"
           printf "%s,%s\n" "$(date -I) "/ipfs/""$cid" | tee -a "${{ env.WEB_PAGE_CIDS_OUTPUT_FILE }}"
-          echo "/ipns/""$(ipfs name publish -Q "$cid" )" | tee IPNS_HASH_OUTPUT_FILE
+          echo "/ipns/""$(ipfs name publish -Q "$cid" )" | tee "${{ env.IPNS_HASH_OUTPUT_FILE }}"
         
       - name: Upload to IPFS
         uses: aquiladev/ipfs-action@v0.1.6
