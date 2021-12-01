@@ -40,7 +40,7 @@ jobs:
           path_to_add: "${{ env.COMPACT_FILENAME }}"
         
       - name: write compact csv output
-        run: printf "%s,%s,%s\n" "${{ env.COMPACT_FILENAME }}" "$(date -I)" "${{ env.COMPACT_SIZE }}" "${{ steps.web3.outputs.cid }}" >> "${{ env.COMPACT_CSV_OUTPUT }}"
+        run: printf "%s,%s,%s,%s\n" "${{ env.COMPACT_FILENAME }}" "$(date -I)" "${{ env.COMPACT_SIZE }}" "${{ steps.web3.outputs.cid }}" >> "${{ env.COMPACT_CSV_OUTPUT }}"
         
       - name: web3 upload
         uses: web3-storage/add-to-web3@v1
