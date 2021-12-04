@@ -39,8 +39,11 @@ jobs:
           web3_token: ${{ secrets.WEB3_STORAGE_TOKEN }}
           path_to_add: "${{ env.COMPACT_FILENAME }}"
         
+      - name: add cid to env
+        run: echo "COMPACT_CID=${{ steps.web3.outputs.cid }}" >> $GITHUB_ENV
+        
       - name: write compact csv output
-        run: printf "%s,%s,%s,%s\n" "${{ env.COMPACT_FILENAME }}" "$(date -I)" "${{ env.COMPACT_SIZE }}" "${{ steps.web3.outputs.cid }}" >> "${{ env.COMPACT_CSV_OUTPUT }}"
+        run: printf "%s,%s,%s,%s\n" "${{ env.COMPACT_FILENAME }}" "$(date -I)" "${{ env.COMPACT_SIZE }}" "${{ env.COMPACT_CID }}" >> "${{ env.COMPACT_CSV_OUTPUT }}"
         
       - name: web3 upload
         uses: web3-storage/add-to-web3@v1
@@ -49,8 +52,11 @@ jobs:
           web3_token: ${{ secrets.WEB3_STORAGE_TOKEN }}
           path_to_add: "${{ env.MAIN_FILENAME }}"
         
+      - name: add cid to env
+        run: echo "MAIN_CID=${{ steps.web3.outputs.cid }}" >> $GITHUB_ENV
+        
       - name: write main csv output
-        run: printf "%s,%s,%s,%s\n" "${{ env.MAIN_FILENAME }}" "$(date -I)" "${{ env.MAIN_SIZE }}" "${{ steps.web3.outputs.cid }}" >> "${{ env.MAIN_CSV_OUTPUT }}"
+        run: printf "%s,%s,%s,%s\n" "${{ env.MAIN_FILENAME }}" "$(date -I)" "${{ env.MAIN_SIZE }}" "${{ env.MAIN_CID }}" >> "${{ env.MAIN_CSV_OUTPUT }}"
         
       - uses: actions/setup-python@v2
         with:
@@ -67,7 +73,7 @@ jobs:
         run: |
           cid="$(ipfs add -Q "${{ env.WEB_PAGE_OUTPUT_FILE }}" )"
           printf "%s,%s\n" "$(date -I)" "/ipfs/""$cid" | tee -a "${{ env.WEB_PAGE_CIDS_OUTPUT_FILE }}"
-          echo "/ipns/""$(ipfs name publish -Q "$cid" )" | tee "${{ env.IPNS_HASH_OUTPUT_FILE }}"
+          echo "/ipns/""$(ipfs name publish -Q "/ipfs/""$cid" )" | tee "${{ env.IPNS_HASH_OUTPUT_FILE }}"
         
       - name: Upload to IPFS
         uses: aquiladev/ipfs-action@v0.1.6
