@@ -1,1 +1,1 @@
-To go to the dbdumps directory listing Click [Here](https://ipfs.io/ipns/QmWCPdGAP5TZYbLXJo3f3gmzZJEbv3QfQCfbZF66Z2uH5p)
+To go to the dbdumps directory listing Click [Here](https://ipfs.io/ipns/)
