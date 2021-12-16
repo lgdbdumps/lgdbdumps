@@ -11,57 +11,69 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2
-      - name: environment settings
+        
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+        
+      - name: set environment vars
         run: |
             echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV
             echo "COMPACT_URL=https://libgen.rs/dbdumps/libgen_compact.rar" >> $GITHUB_ENV
             echo "MAIN_URL=https://libgen.rs/dbdumps/libgen.rar" >> $GITHUB_ENV
             echo "COMPACT_FILENAME=libgen_compact_$(date -I).rar" >> $GITHUB_ENV
             echo "MAIN_FILENAME=libgen_$(date -I).rar" >> $GITHUB_ENV
-            echo "UA=UA=Mozilla/5.0(WindowsNT10.0;Win64;x64)AppleWebKit/537.36(KHTML,likeGecko)Chrome/96.0.4664.45Safari/537.36" >> $GITHUB_ENV
+            echo "UA=Mozilla/5.0(WindowsNT10.0;Win64;x64)AppleWebKit/537.36(KHTML,likeGecko)Chrome/96.0.4664.45Safari/537.36" >> $GITHUB_ENV
             echo "MAIN_CSV_OUTPUT=main_csv_output" >> $GITHUB_ENV
             echo "COMPACT_CSV_OUTPUT=compact_csv_output" >> $GITHUB_ENV
             echo "WEB_PAGE_OUTPUT_FILE=output.html" >> $GITHUB_ENV
             echo "WEB_PAGE_CIDS_OUTPUT_FILE=pages_output_cids" >> $GITHUB_ENV
             echo "IPNS_HASH_OUTPUT_FILE=ipns_output" >> $GITHUB_ENV
+            echo "COMPACT_CID=compact_cid" >> $GITHUB_ENV
+            echo "MAIN_CID=main_cid" >> $GITHUB_ENV
+            echo "TOMORROW_DATE=$(python get_tmrw_date.py)" >> $GITHUB_ENV
         
-      - name: get
+      - name: get dumps
         run: |
             wget -U "${{ env.UA }}" -O "${{ env.COMPACT_FILENAME }}" "${{ env.COMPACT_URL }}"
             echo "COMPACT_SIZE=$( ls -lh "${{ env.COMPACT_FILENAME }}" | tr -s [:blank:] | cut -d ' ' -f5 )" >> $GITHUB_ENV
             wget -U "${{ env.UA }}" -O "${{ env.MAIN_FILENAME }}" "${{ env.MAIN_URL }}"
             echo "MAIN_SIZE=$( ls -lh "${{ env.MAIN_FILENAME }}" | tr -s [:blank:] | cut -d ' ' -f5 )" >> $GITHUB_ENV
         
-      - name: web3 upload
+      - name: web3 compact upload
         uses: web3-storage/add-to-web3@v1
         id: compact
         with:
           web3_token: ${{ secrets.WEB3_STORAGE_TOKEN }}
           path_to_add: "${{ env.COMPACT_FILENAME }}"
         
-      - name: write cid
-        run: echo "${{ steps.web3.outputs.cid }}" > cid
-        
-      - name: write compact csv output
-        run: printf "%s,%s,%s,%s\n" "${{ env.COMPACT_FILENAME }}" "$(date -I)" "${{ env.COMPACT_SIZE }}" "$(cat cid)" >> "${{ env.COMPACT_CSV_OUTPUT }}"
-        
-      - name: web3 upload
+      - name: web3 main upload
         uses: web3-storage/add-to-web3@v1
         id: main
         with:
           web3_token: ${{ secrets.WEB3_STORAGE_TOKEN }}
           path_to_add: "${{ env.MAIN_FILENAME }}"
         
-      - name: write cid
-        run: echo "${{ steps.web3.outputs.cid }}" > cid
+      - name: get json of web3 uploads
+        run: |
+            header="Authorization: Bearer ""${{ secrets.WEB3_STORAGE_TOKEN }}"
+            api_url="https://api.web3.storage/user/uploads?before=""${{ env.TOMORROW_DATE }}""&size=2"
+            curl -A "${{ env.UA }}" -o "${{ env.JSON_FILENAME }}" -H "$header" "$api_url"
+        
+      - name: extract main cid
+        run: python extract_cid.py "${{ env.JSON_FILENAME }}" "${{ env.MAIN_CID }}" 0
+        
+      - name: extract compact cid
+        run: python extract_cid.py "${{ env.JSON_FILENAME }}" "${{ env.COMPACT_CID }}" 1
         
       - name: write main csv output
-        run: printf "%s,%s,%s,%s\n" "${{ env.MAIN_FILENAME }}" "$(date -I)" "${{ env.MAIN_SIZE }}" "$(cat cid)" >> "${{ env.MAIN_CSV_OUTPUT }}"
+        run: printf "%s,%s,%s,%s\n" "${{ env.MAIN_FILENAME }}" "$(date -I)" "${{ env.MAIN_SIZE }}" "$(cat "${{ env.MAIN_CID }}")" >> "${{ env.MAIN_CSV_OUTPUT }}"
         
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: run python script
+      - name: write compact csv output
+        run: printf "%s,%s,%s,%s\n" "${{ env.COMPACT_FILENAME }}" "$(date -I)" "${{ env.COMPACT_SIZE }}" "$(cat "${{ env.COMPACT_CID }}")" >> "${{ env.COMPACT_CSV_OUTPUT }}"
+        
+      - name: write html dir listing page
         run: python write_html.py
         
       - name: IPFS Setup Action
@@ -69,19 +81,20 @@ jobs:
         with:        
           run_daemon: true
         
-      - name: Run a script
+      - name: add webpage to ipfs and publish cid on IPNS
         run: |
           cid="$(ipfs add -Q "${{ env.WEB_PAGE_OUTPUT_FILE }}" )"
           printf "%s,%s\n" "$(date -I)" "/ipfs/""$cid" | tee -a "${{ env.WEB_PAGE_CIDS_OUTPUT_FILE }}"
-          echo "/ipns/""$(ipfs name publish -Q "/ipfs/""$cid" )" | tee "${{ env.IPNS_HASH_OUTPUT_FILE }}"
+          echo "/ipns/""$(ipfs name publish -Q "$cid" )" | tee "${{ env.IPNS_HASH_OUTPUT_FILE }}"
         
-      - name: Upload to IPFS
+      - name: Upload dir listing webpage to pinning service
         uses: aquiladev/ipfs-action@v0.1.6
         with:  
           path: "${{ env.WEB_PAGE_OUTPUT_FILE }}"
           service: infura
+        
       - name: update readme
-        run: printf "To go to the dbdumps directory listing Click [Here](%s%s)" "https://ipfs.io" "$(cat "${{ env.IPNS_HASH_OUTPUT_FILE }}" )" > README.md
+        run: printf "To go to the dbdumps directory listing Click [Here](%s%s) . Updated at %s" "https://ipfs.io" "$(cat "${{ env.IPNS_HASH_OUTPUT_FILE }}" )" "$(date -I)" > README.md
         
       - name: setup git config
         run: |
@@ -90,9 +103,12 @@ jobs:
         
       - name: git pull
         run: git pull
+        
       - name: git add
         run: git add -f README.md "${{ env.IPNS_HASH_OUTPUT_FILE }}" "${{ env.WEB_PAGE_CIDS_OUTPUT_FILE }}" "${{ env.WEB_PAGE_OUTPUT_FILE }}" "${{ env.MAIN_CSV_OUTPUT }}" "${{ env.COMPACT_CSV_OUTPUT }}"
+        
       - name: git commit
         run: git commit -m "auto update at $(date)"
+        
       - name: git push
         run: git push
