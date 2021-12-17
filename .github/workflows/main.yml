@@ -34,7 +34,7 @@ jobs:
             echo "MAIN_CID=main_cid" >> $GITHUB_ENV
             echo "TOMORROW_DATE=$(python get_tmrw_date.py)" >> $GITHUB_ENV
             echo HEADER="Authorization: Bearer ""${{ secrets.WEB3_STORAGE_TOKEN }}" >> $GITHUB_ENV
-            echo APIURL="https://api.web3.storage/user/uploads?before=""${{ env.TOMORROW_DATE }}""&size=2">> $GITHUB_ENV
+            echo APIURL="https://api.web3.storage/user/uploads?before=""${{ env.TOMORROW_DATE }}""&size=2" >> $GITHUB_ENV
         
       - name: get dumps
         run: |
