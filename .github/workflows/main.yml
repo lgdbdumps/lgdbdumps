@@ -33,8 +33,13 @@ jobs:
             echo "COMPACT_CID=compact_cid" >> $GITHUB_ENV
             echo "MAIN_CID=main_cid" >> $GITHUB_ENV
             echo "TOMORROW_DATE=$(python get_tmrw_date.py)" >> $GITHUB_ENV
-            echo HEADER="Authorization: Bearer ""${{ secrets.WEB3_STORAGE_TOKEN }}" >> $GITHUB_ENV
-            echo APIURL="https://api.web3.storage/user/uploads?before=""${{ env.TOMORROW_DATE }}""&size=2" >> $GITHUB_ENV
+            echo "HEADER=header" >> $GITHUB_ENV
+            echo "APIURL=apiurl" >> $GITHUB_ENV
+      
+      - name: write tmp files
+        run: |
+            echo "https://api.web3.storage/user/uploads?before=""${{ env.TOMORROW_DATE }}""&size=2" >> "${{ env.APIURL }}"
+            echo "Authorization: Bearer ""${{ secrets.WEB3_STORAGE_TOKEN }}" >> "${{ env.HEADER }}"
         
       - name: get dumps
         run: |
@@ -58,7 +63,7 @@ jobs:
           path_to_add: "${{ env.MAIN_FILENAME }}"
         
       - name: get json of web3 uploads
-        run: curl -A "${{ env.UA }}" -o "${{ env.JSON_FILENAME }}" -H "${{ env.HEADER }}" "${{ env.APIURL }}"
+        run: curl -A "${{ env.UA }}" -o "${{ env.JSON_FILENAME }}" -H @"${{ env.HEADER }}" "$(cat ${{ env.APIURL }} )"
         
       - name: extract main cid
         run: python extract_cid.py "${{ env.JSON_FILENAME }}" "${{ env.MAIN_CID }}" 0
