@@ -18,6 +18,13 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      
+      - name: set environment vars
+        run: |
+            echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV
+            echo "TOMORROW_DATE=$(python get_tmrw_date.py)" >> $GITHUB_ENV
+            echo "HEADER=header" >> $GITHUB_ENV
+            echo "APIURL=apiurl" >> $GITHUB_ENV
 
       - name: write tmp files
         run: |
