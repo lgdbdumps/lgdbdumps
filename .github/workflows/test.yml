@@ -27,8 +27,10 @@ jobs:
             echo "APIURL=apiurl" >> $GITHUB_ENV
 
       - name: write tmp files
+        env:
+          TOKEN:"${{ secrets.WEB3_STORAGE_TOKEN }}"
         run: |
             echo "https://api.web3.storage/user/uploads?before=""${{ env.TOMORROW_DATE }}""&size=2" >> "${{ env.APIURL }}"
-            echo "Authorization: Bearer ""${{ secrets.WEB3_STORAGE_TOKEN }}" >> "${{ env.HEADER }}"
+            echo "Authorization: Bearer $TOKEN" >> "${{ env.HEADER }}"
             cat "${{ env.HEADER }}"
             cat "${{ env.APIURL }}"
