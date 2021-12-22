@@ -8,6 +8,6 @@ f = open(JSON_FILENAME)
 outf = open(OUTPUT_FILENAME, 'w')
 json_data = json.loads(f.read())
 l = list(json_data)
-nl = [el['cid'] + '\n' for el in l]
+nl = ['/ipfs/' + el['cid'] + '\n' for el in l]
 outf.write(nl[INDEX])
 outf.close()
