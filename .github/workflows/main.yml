@@ -33,7 +33,7 @@ jobs:
             echo "MAIN_URL=https://libgen.rs/dbdumps/libgen.rar" >> $GITHUB_ENV
             echo "COMPACT_FILENAME=libgen_compact_$(date -I).rar" >> $GITHUB_ENV
             echo "MAIN_FILENAME=libgen_$(date -I).rar" >> $GITHUB_ENV
-            echo "UA=Mozilla/5.0(WindowsNT10.0;Win64;x64)AppleWebKit/537.36(KHTML,likeGecko)Chrome/96.0.4664.45Safari/537.36" >> $GITHUB_ENV
+            echo "UA=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36" >> $GITHUB_ENV
             echo "MAIN_CSV_OUTPUT=main_csv_output" >> $GITHUB_ENV
             echo "COMPACT_CSV_OUTPUT=compact_csv_output" >> $GITHUB_ENV
             echo "WEB_PAGE_OUTPUT_FILE=output.html" >> $GITHUB_ENV
