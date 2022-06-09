@@ -1,4 +1,5 @@
 import csv
+import sys
 
 MAIN_CSV_OUTPUT = 'main_csv_output'
 COMPACT_CSV_OUTPUT = 'compact_csv_output'
@@ -28,10 +29,9 @@ finput = open(MAIN_CSV_OUTPUT)
 
 lines = [ l for l in list(csv.reader(finput)) ]
 finput.close()
-l_rev = lines[::-1]
 rows = ''
-for rec in l_rev:
-    rows += line.format(IPFS_GATEWAY="https://ipfs.io", IPFS_HASH=rec[3], FILENAME=rec[0], DATE=rec[1], SIZE=rec[2]) + '\n'
+for rec in lines:
+    rows += line.format(IPFS_GATEWAY="https://ipfs.io", IPFS_HASH=rec[3], FILENAME=rec[0], DATE=rec[2], SIZE=rec[1]) + '\n'
 
 html += rows    
 
@@ -39,10 +39,9 @@ html += rows
 finput = open(COMPACT_CSV_OUTPUT)
 lines = [ l for l in list(csv.reader(finput)) ]
 finput.close()
-l_rev = lines[::-1]
 rows = ''
-for rec in l_rev:
-    rows += line2.format(IPFS_GATEWAY="https://ipfs.io", IPFS_HASH=rec[3], FILENAME=rec[0], DATE=rec[1], SIZE=rec[2]) + '\n'
+for rec in lines:
+    rows += line2.format(IPFS_GATEWAY="https://ipfs.io", IPFS_HASH=rec[3], FILENAME=rec[0], DATE=rec[2], SIZE=rec[1]) + '\n'
 
 html += rows
 html += suffix
