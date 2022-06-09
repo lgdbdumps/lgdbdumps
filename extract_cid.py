@@ -5,7 +5,6 @@ MAIN_CSV_OUTPUT = 'main_csv_output'
 COMPACT_CSV_OUTPUT = 'compact_csv_output'
 
 JSON_FILENAME = sys.argv[1]
-OUTPUT_FILENAME = sys.argv[2]
 f = open(JSON_FILENAME)
 outf = open(MAIN_CSV_OUTPUT, 'w')
 outf2 = open(COMPACT_CSV_OUTPUT, 'w')
