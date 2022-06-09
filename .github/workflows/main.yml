@@ -50,7 +50,7 @@ jobs:
         env:
           TOKEN: "${{ secrets.WEB3_STORAGE_TOKEN }}"
         run: |
-            echo "https://api.web3.storage/user/uploads?before=""${{ env.TOMORROW_DATE }}""&size=2" >> "${{ env.APIURL }}"
+            echo "https://api.web3.storage/user/uploads >> "${{ env.APIURL }}"
             echo "Authorization: Bearer $TOKEN" >> "${{ env.HEADER }}"
         
       - name: get dumps
@@ -78,16 +78,10 @@ jobs:
         run: curl -A "${{ env.UA }}" -o "${{ env.JSON_FILENAME }}" -H @"${{ env.HEADER }}" "$(cat ${{ env.APIURL }} )"
         
       - name: extract main cid
-        run: python extract_cid.py "${{ env.JSON_FILENAME }}" "${{ env.MAIN_CID }}" 0
+        run: python extract_cid.py "${{ env.JSON_FILENAME }}"
         
       - name: extract compact cid
-        run: python extract_cid.py "${{ env.JSON_FILENAME }}" "${{ env.COMPACT_CID }}" 1
-        
-      - name: write main csv output
-        run: printf "%s,%s,%s,%s\n" "${{ env.MAIN_FILENAME }}" "$(date -I)" "${{ env.MAIN_SIZE }}" "$(cat "${{ env.MAIN_CID }}")" >> "${{ env.MAIN_CSV_OUTPUT }}"
-        
-      - name: write compact csv output
-        run: printf "%s,%s,%s,%s\n" "${{ env.COMPACT_FILENAME }}" "$(date -I)" "${{ env.COMPACT_SIZE }}" "$(cat "${{ env.COMPACT_CID }}")" >> "${{ env.COMPACT_CSV_OUTPUT }}"
+        run: python extract_cid.py "${{ env.JSON_FILENAME }}"
         
       - name: write html dir listing page
         run: python write_html.py
@@ -97,17 +91,16 @@ jobs:
         with:        
           run_daemon: true
         
+      - name: Upload dir listing webpage to pinning service
+        run : |
+          curl -X POST --data-binary @"${{ env.WEB_PAGE_OUTPUT_FILE }}" -H 'Authorization: Bearer ${{ secrets.WEB3_STORAGE_TOKEN }}' https://api.web3.storage/upload -s -o cid.json
+          
+        
       - name: add webpage to ipfs and publish cid on IPNS
         run: |
-          cid="$(ipfs add -Q "${{ env.WEB_PAGE_OUTPUT_FILE }}" )"
+          cid="$(python extract_single_cid.py cid.json)"
           printf "%s,%s\n" "$(date -I)" "/ipfs/""$cid" | tee -a "${{ env.WEB_PAGE_CIDS_OUTPUT_FILE }}"
           echo "/ipns/""$(ipfs name publish -Q "$cid" )" | tee "${{ env.IPNS_HASH_OUTPUT_FILE }}"
-        
-      - name: Upload dir listing webpage to pinning service
-        uses: aquiladev/ipfs-action@v0.1.6
-        with:  
-          path: "${{ env.WEB_PAGE_OUTPUT_FILE }}"
-          service: infura
         
       - name: update readme
         run: printf "To go to the dbdumps directory listing Click [Here](%s%s) . Updated at %s" "https://ipfs.io" "$(cat "${{ env.IPNS_HASH_OUTPUT_FILE }}" )" "$(date -I)" > README.md
