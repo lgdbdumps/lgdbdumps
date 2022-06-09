@@ -19,5 +19,5 @@ for i in range(length):
     name='libgen_compact_'
   fnames.append(name)
 for i in range(length): 
-  outf.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar' sizes[i], dates[i], cids[i]))  
+  outf.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', sizes[i]+'M', dates[i], cids[i]))  
 outf.close()
