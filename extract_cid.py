@@ -13,7 +13,7 @@ dict_lst = list(json_data)
 length=len(dict_lst)
 fnames=[]
 cids = ['/ipfs/' + el['cid'] + '\n' for el in dict_lst]
-sizes = [ el['dagSize'] / (1024 * 1024) for el in dict_lst]
+sizes = [ el['dagSize'] for el in dict_lst]
 dates = [el['created'].split('T')[0] for el in dict_lst]
 limit = 1024 ** 3
 for i in range(length):
@@ -24,8 +24,8 @@ for i in range(length):
   fnames.append(name)
 for i in range(length):
   if int(sizes[i]) > limit:
-    outf.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(int(sizes[i]))+'M', dates[i], cids[i]))
+    outf.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(int(sizes[i] / (1024 * 1024) ))+'M', dates[i], cids[i]))
   else:
-    outf2.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(int(sizes[i]))+'M', dates[i], cids[i]))
+    outf2.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(int(sizes[i] / (1024 * 1024)))+'M', dates[i], cids[i]))
 outf.close()
 outf2.close()
