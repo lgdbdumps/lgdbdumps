@@ -50,7 +50,7 @@ jobs:
         env:
           TOKEN: "${{ secrets.WEB3_STORAGE_TOKEN }}"
         run: |
-            echo "https://api.web3.storage/user/uploads" >> "${{ env.APIURL }}"
+            echo "https://api.web3.storage/user/uploads?size=1000" >> "${{ env.APIURL }}"
             echo "Authorization: Bearer $TOKEN" >> "${{ env.HEADER }}"
         
       - name: get dumps
