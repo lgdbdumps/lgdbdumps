@@ -15,7 +15,7 @@ fnames=[]
 cids = ['/ipfs/' + el['cid'] + '\n' for el in dict_lst]
 sizes = [ el['dagSize'] / (1024 * 1024) for el in dict_lst]
 dates = [el['created'].split('T')[0] for el in dict_lst]
-limit= 1024 ** 3
+limit = 1024 ** 3
 for i in range(length):
   if i % 2 == 0:
     name='libgen_'
@@ -23,8 +23,9 @@ for i in range(length):
     name='libgen_compact_'
   fnames.append(name)
 for i in range(length):
-  if sizes[i] > limit:
+  if int(sizes[i]) > limit:
     outf.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(int(sizes[i]))+'M', dates[i], cids[i]))
   else:
     outf2.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(int(sizes[i]))+'M', dates[i], cids[i]))
 outf.close()
+outf2.close()
