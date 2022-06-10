@@ -23,7 +23,7 @@ for i in range(length):
   fnames.append(name)
 for i in range(length):
   if i % 2 == 0:
-    outf.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', sizes[i]+'M', dates[i], cids[i]))
+    outf.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(sizes[i])+'M', dates[i], cids[i]))
   else:
-    outf2.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', sizes[i]+'M', dates[i], cids[i]))
+    outf2.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(sizes[i])+'M', dates[i], cids[i]))
 outf.close()
