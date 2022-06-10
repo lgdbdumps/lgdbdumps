@@ -1,0 +1,100 @@
+name: update
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: persist ipfs repo
+        uses: actions/cache@v2
+        env:
+          KEY: "ipfsrepo$(date -I | tr -d '-')"
+        with:
+          path: ~/.ipfs
+          key: "${{ env.KEY }}"
+          restore-keys: "ipfsrepo"
+        
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+        
+      - name: set environment vars
+        run: |
+            echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV
+            echo "COMPACT_URL=https://libgen.rs/dbdumps/libgen_compact.rar" >> $GITHUB_ENV
+            echo "MAIN_URL=https://libgen.rs/dbdumps/libgen.rar" >> $GITHUB_ENV
+            echo "COMPACT_FILENAME=libgen_compact_$(date -I).rar" >> $GITHUB_ENV
+            echo "MAIN_FILENAME=libgen_$(date -I).rar" >> $GITHUB_ENV
+            echo "UA=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36" >> $GITHUB_ENV
+            echo "MAIN_CSV_OUTPUT=main_csv_output" >> $GITHUB_ENV
+            echo "COMPACT_CSV_OUTPUT=compact_csv_output" >> $GITHUB_ENV
+            echo "WEB_PAGE_OUTPUT_FILE=output.html" >> $GITHUB_ENV
+            echo "WEB_PAGE_CIDS_OUTPUT_FILE=pages_output_cids" >> $GITHUB_ENV
+            echo "IPNS_HASH_OUTPUT_FILE=ipns_output" >> $GITHUB_ENV
+            echo "COMPACT_CID=compact_cid" >> $GITHUB_ENV
+            echo "MAIN_CID=main_cid" >> $GITHUB_ENV
+            echo "TOMORROW_DATE=$(python get_tmrw_date.py)" >> $GITHUB_ENV
+            echo "HEADER=header" >> $GITHUB_ENV
+            echo "APIURL=apiurl" >> $GITHUB_ENV
+            echo "JSON_FILENAME=stats.json" >> $GITHUB_ENV
+      
+      - name: write tmp files
+        env:
+          TOKEN: "${{ secrets.WEB3_STORAGE_TOKEN }}"
+        run: |
+            echo "https://api.web3.storage/user/uploads" >> "${{ env.APIURL }}"
+            echo "Authorization: Bearer $TOKEN" >> "${{ env.HEADER }}"
+        
+      - name: get json of web3 uploads
+        run: curl -A "${{ env.UA }}" -o "${{ env.JSON_FILENAME }}" -H @"${{ env.HEADER }}" "$(cat ${{ env.APIURL }} )"
+        
+      - name: extract main cid
+        run: python extract_cid.py "${{ env.JSON_FILENAME }}"
+        
+      - name: extract compact cid
+        run: python extract_cid.py "${{ env.JSON_FILENAME }}"
+        
+      - name: write html dir listing page
+        run: python write_html.py
+        
+      - name: IPFS Setup Action
+        uses: ibnesayeed/setup-ipfs@0.6.0
+        with:        
+          run_daemon: true
+        
+      - name: Upload dir listing webpage to pinning service
+        run : |
+          curl -X POST --data-binary @"${{ env.WEB_PAGE_OUTPUT_FILE }}" -H 'Authorization: Bearer ${{ secrets.WEB3_STORAGE_TOKEN }}' https://api.web3.storage/upload -s -o cid.json
+          
+        
+      - name: add webpage to ipfs and publish cid on IPNS
+        run: |
+          cid="$(python extract_single_cid.py cid.json)"
+          printf "%s,%s\n" "$(date -I)" "/ipfs/""$cid" | tee -a "${{ env.WEB_PAGE_CIDS_OUTPUT_FILE }}"
+          echo "/ipns/""$(ipfs name publish -Q "$cid" )" | tee "${{ env.IPNS_HASH_OUTPUT_FILE }}"
+        
+      - name: update readme
+        run: printf "To go to the dbdumps directory listing Click [Here](%s%s) . Updated at %s" "https://ipfs.io" "$(cat "${{ env.IPNS_HASH_OUTPUT_FILE }}" )" "$(date -I)" > README.md
+        
+      - name: setup git config
+        run: |
+          git config user.name "LG Actions Bot"
+          git config user.email "<lg@lg.lg>"
+        
+      - name: git pull
+        run: git pull
+        
+      - name: git add
+        run: git add -f README.md "${{ env.IPNS_HASH_OUTPUT_FILE }}" "${{ env.WEB_PAGE_CIDS_OUTPUT_FILE }}" "${{ env.WEB_PAGE_OUTPUT_FILE }}" "${{ env.MAIN_CSV_OUTPUT }}" "${{ env.COMPACT_CSV_OUTPUT }}"
+        
+      - name: git commit
+        run: git commit -m "auto update at $(date)"
+        
+      - name: git push
+        run: git push
