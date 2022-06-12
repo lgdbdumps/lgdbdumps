@@ -20,9 +20,10 @@ limit2 = 100 * 1024 * 1024
 for i in range(length):
   if int(sizes[i]) > limit:
     name='libgen_'
+    fnames.append(name)
   elif int(sizes[i]) > limit2:
     name='libgen_compact_'
-  fnames.append(name)
+    fnames.append(name)
 for i in range(length):
   if int(sizes[i]) > limit:
     outf.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(int(sizes[i] / (1024 * 1024) ))+'M', dates[i], cids[i]))
