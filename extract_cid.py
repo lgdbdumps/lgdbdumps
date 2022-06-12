@@ -26,9 +26,9 @@ for i in range(length):
     name=None
   fnames.append(name)
 for i in range(length):
-  if int(sizes[i]) > limit and fnames[i] not None:
+  if int(sizes[i]) > limit and fnames[i] != None:
     outf.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(int(sizes[i] / (1024 * 1024) ))+'M', dates[i], cids[i]))
-  elif int(sizes[i]) > limit2 and fnames[i] not None:
+  elif int(sizes[i]) > limit2 and fnames[i] != None:
     outf2.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(int(sizes[i] / (1024 * 1024)))+'M', dates[i], cids[i]))
 outf.close()
 outf2.close()
