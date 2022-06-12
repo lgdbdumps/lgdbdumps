@@ -20,14 +20,15 @@ limit2 = 100 * 1024 * 1024
 for i in range(length):
   if int(sizes[i]) > limit:
     name='libgen_'
-    fnames.append(name)
   elif int(sizes[i]) > limit2:
     name='libgen_compact_'
-    fnames.append(name)
+  else:
+    name=None
+  fnames.append(name)
 for i in range(length):
-  if int(sizes[i]) > limit:
+  if int(sizes[i]) > limit and fnames[i] not None:
     outf.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(int(sizes[i] / (1024 * 1024) ))+'M', dates[i], cids[i]))
-  elif int(sizes[i]) > limit2:
+  elif int(sizes[i]) > limit2 and fnames[i] not None:
     outf2.write("%s,%s,%s,%s" % (fnames[i]+dates[i]+'.rar', str(int(sizes[i] / (1024 * 1024)))+'M', dates[i], cids[i]))
 outf.close()
 outf2.close()
