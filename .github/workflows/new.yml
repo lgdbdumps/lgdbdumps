@@ -55,7 +55,7 @@ jobs:
         run: python write_html.py
         
       - name: IPFS Setup Action
-        uses: ibnesayeed/setup-ipfs@0.6.0
+        uses: ibnesayeed/setup-ipfs@master
         with:        
           run_daemon: true
         
