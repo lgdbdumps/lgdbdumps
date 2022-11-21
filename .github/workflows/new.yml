@@ -9,15 +9,6 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2
-      
-      - name: persist ipfs repo
-        uses: actions/cache@v2
-        env:
-          KEY: "ipfsrepo$(date -I | tr -d '-')"
-        with:
-          path: ~/.ipfs
-          key: "${{ env.KEY }}"
-          restore-keys: "ipfsrepo"
         
       - name: setup python
         uses: actions/setup-python@v2
