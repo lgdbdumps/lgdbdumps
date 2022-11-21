@@ -58,6 +58,7 @@ jobs:
         uses: ibnesayeed/setup-ipfs@master
         with:        
           run_daemon: true
+          ipfs_version: 0.16
         
       - name: Upload dir listing webpage to pinning service
         run : |
