@@ -69,7 +69,7 @@ jobs:
         run: |
           cid="$(python extract_single_cid.py cid.json)"
           printf "%s,%s\n" "$(date -I)" "/ipfs/""$cid" | tee -a "${{ env.WEB_PAGE_CIDS_OUTPUT_FILE }}"
-          echo "/ipns/""$(ipfs name publish -Q "$cid" )" | tee "${{ env.IPNS_HASH_OUTPUT_FILE }}"
+          echo "/ipfs/""$cid" | tee "${{ env.IPNS_HASH_OUTPUT_FILE }}"
         
       - name: update readme
         run: printf "To go to the dbdumps directory listing Click [Here](%s%s) . Updated at %s" "https://ipfs.io" "$(cat "${{ env.IPNS_HASH_OUTPUT_FILE }}" )" "$(date -I)" > README.md
