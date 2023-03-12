@@ -25,6 +25,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+
+      - name: Install aria2
+        run: sudo apt update && sudo apt install aria2 -y
         
       - name: set environment vars
         run: |
@@ -55,9 +58,9 @@ jobs:
         
       - name: get dumps
         run: |
-            wget -U "${{ env.UA }}" -O "${{ env.COMPACT_FILENAME }}" "${{ env.COMPACT_URL }}"
+            aria2c -x16 -o "${{ env.COMPACT_FILENAME }}" "${{ env.COMPACT_URL }}"
             echo "COMPACT_SIZE=$( ls -lh "${{ env.COMPACT_FILENAME }}" | tr -s [:blank:] | cut -d ' ' -f5 )" >> $GITHUB_ENV
-            wget -U "${{ env.UA }}" -O "${{ env.MAIN_FILENAME }}" "${{ env.MAIN_URL }}"
+            aria2c -x16 -o "${{ env.MAIN_FILENAME }}" "${{ env.MAIN_URL }}"
             echo "MAIN_SIZE=$( ls -lh "${{ env.MAIN_FILENAME }}" | tr -s [:blank:] | cut -d ' ' -f5 )" >> $GITHUB_ENV
         
       - name: web3 compact upload
