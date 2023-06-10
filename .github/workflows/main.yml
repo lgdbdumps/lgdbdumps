@@ -26,6 +26,9 @@ jobs:
         with:
           python-version: 3.8
 
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.5.2
+
       - name: Install aria2
         run: sudo apt update && sudo apt install aria2 -y
         
@@ -44,40 +47,34 @@ jobs:
             echo "IPNS_HASH_OUTPUT_FILE=ipns_output" >> $GITHUB_ENV
             echo "COMPACT_CID=compact_cid" >> $GITHUB_ENV
             echo "MAIN_CID=main_cid" >> $GITHUB_ENV
-            echo "TOMORROW_DATE=$(python get_tmrw_date.py)" >> $GITHUB_ENV
             echo "HEADER=header" >> $GITHUB_ENV
             echo "APIURL=apiurl" >> $GITHUB_ENV
             echo "JSON_FILENAME=stats.json" >> $GITHUB_ENV
       
       - name: write tmp files
         env:
-          TOKEN: "${{ secrets.WEB3_STORAGE_TOKEN }}"
+          TOKEN: "${{ secrets.NFT_APIKEY }}"
         run: |
-            echo "https://api.web3.storage/user/uploads?size=1000" >> "${{ env.APIURL }}"
+            echo "https://api.nft.storage/?limit=1000" >> "${{ env.APIURL }}"
             echo "Authorization: Bearer $TOKEN" >> "${{ env.HEADER }}"
         
+      - name: set up .storage package
+        run: npm install nft.storage
+      
       - name: get dumps
         run: |
-            aria2c -x16 -o "${{ env.COMPACT_FILENAME }}" "${{ env.COMPACT_URL }}"
+            aria2c -U "${{ env.UA }}" -x16 -o "${{ env.COMPACT_FILENAME }}" "${{ env.COMPACT_URL }}"
             echo "COMPACT_SIZE=$( ls -lh "${{ env.COMPACT_FILENAME }}" | tr -s [:blank:] | cut -d ' ' -f5 )" >> $GITHUB_ENV
-            aria2c -x16 -o "${{ env.MAIN_FILENAME }}" "${{ env.MAIN_URL }}"
+            aria2c -U "${{ env.UA }}" -x16 -o "${{ env.MAIN_FILENAME }}" "${{ env.MAIN_URL }}"
             echo "MAIN_SIZE=$( ls -lh "${{ env.MAIN_FILENAME }}" | tr -s [:blank:] | cut -d ' ' -f5 )" >> $GITHUB_ENV
         
-      - name: web3 compact upload
-        uses: web3-storage/add-to-web3@v1
-        id: compact
-        with:
-          web3_token: ${{ secrets.WEB3_STORAGE_TOKEN }}
-          path_to_add: "${{ env.COMPACT_FILENAME }}"
+      - name: compact upload
+        run: node storeBlob.mjs "${{ env.COMPACT_FILENAME }}"
         
-      - name: web3 main upload
-        uses: web3-storage/add-to-web3@v1
-        id: main
-        with:
-          web3_token: ${{ secrets.WEB3_STORAGE_TOKEN }}
-          path_to_add: "${{ env.MAIN_FILENAME }}"
+      - name: main upload
+        run: node storeBlob.mjs "${{ env.MAIN_FILENAME }}"
         
-      - name: get json of web3 uploads
+      - name: get json of uploads
         run: curl -A "${{ env.UA }}" -o "${{ env.JSON_FILENAME }}" -H @"${{ env.HEADER }}" "$(cat ${{ env.APIURL }} )"
         
       - name: extract main cid
@@ -96,7 +93,7 @@ jobs:
         
       - name: Upload dir listing webpage to pinning service
         run : |
-          curl -X POST --data-binary @"${{ env.WEB_PAGE_OUTPUT_FILE }}" -H 'Authorization: Bearer ${{ secrets.WEB3_STORAGE_TOKEN }}' https://api.web3.storage/upload -s -o cid.json
+          curl -X POST --data-binary @"${{ env.WEB_PAGE_OUTPUT_FILE }}" -H @"${{ env.HEADER }}" https://api.nft.storage/upload -s -o cid.json
           
         
       - name: add webpage to ipfs and publish cid on IPNS
