@@ -57,6 +57,8 @@ jobs:
         run: |
             echo "https://api.nft.storage/?limit=1000" >> "${{ env.APIURL }}"
             echo "Authorization: Bearer $TOKEN" >> "${{ env.HEADER }}"
+            NFT_APIKEY="$TOKEN"
+            export NFT_APIKEY
         
       - name: set up .storage package
         run: npm install nft.storage
