@@ -6,6 +6,16 @@ on:
     - cron: '30 04 * * *'
 
 jobs:
+  prebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: set nft apikey
+        env:
+          TOKEN: "${{ secrets.NFT_APIKEY }}"
+        run: |
+            NFT_APIKEY="$TOKEN"
+            export NFT_APIKEY
   build:
     runs-on: ubuntu-latest
     
