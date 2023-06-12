@@ -67,8 +67,6 @@ jobs:
         run: |
             echo "https://api.nft.storage/?limit=1000" >> "${{ env.APIURL }}"
             echo "Authorization: Bearer $TOKEN" >> "${{ env.HEADER }}"
-            NFT_APIKEY="$TOKEN"
-            export NFT_APIKEY
         
       - name: set up .storage package
         run: npm install nft.storage
@@ -89,10 +87,7 @@ jobs:
       - name: get json of uploads
         run: curl -A "${{ env.UA }}" -o "${{ env.JSON_FILENAME }}" -H @"${{ env.HEADER }}" "$(cat ${{ env.APIURL }} )"
         
-      - name: extract main cid
-        run: python extract_cid.py "${{ env.JSON_FILENAME }}"
-        
-      - name: extract compact cid
+      - name: extract cid
         run: python extract_cid.py "${{ env.JSON_FILENAME }}"
         
       - name: write html dir listing page
