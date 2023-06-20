@@ -26,9 +26,6 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.2
-
       - name: Install aria2
         run: sudo apt update && sudo apt install aria2 -y
         
@@ -57,7 +54,7 @@ jobs:
         run: |
             echo "https://api.nft.storage/?limit=1000" >> "${{ env.APIURL }}"
             echo "Authorization: Bearer $TOKEN" >> "${{ env.HEADER }}"
-            chmod +x linux2ipfs
+            chmod +x ipfs-pinner-linux-amd64
         
       - name: set up .storage package
         run: npm install nft.storage
@@ -70,10 +67,10 @@ jobs:
             echo "MAIN_SIZE=$( ls -lh "${{ env.MAIN_FILENAME }}" | tr -s [:blank:] | cut -d ' ' -f5 )" >> $GITHUB_ENV
         
       - name: compact upload
-        run: ./linux2ipfs -driver nft.storage "${{ env.COMPACT_FILENAME }}"
+        run: ./ipfs-pinner-linux-amd64 -t nftstorage -u "${{ secrets.NFT_APIKEY }}" "${{ env.COMPACT_FILENAME }}"
         
       - name: main upload
-        run: ./linux2ipfs -driver nft.storage "${{ env.MAIN_FILENAME }}"
+        run: ./ipfs-pinner-linux-amd64 -t nftstorage -u "${{ secrets.NFT_APIKEY }}" "${{ env.MAIN_FILENAME }}"
         
       - name: get json of uploads
         run: curl -A "${{ env.UA }}" -o "${{ env.JSON_FILENAME }}" -H @"${{ env.HEADER }}" "$(cat ${{ env.APIURL }} )"
