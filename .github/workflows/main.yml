@@ -6,6 +6,16 @@ on:
     - cron: '30 04 * * *'
 
 jobs:
+  prebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: set nft apikey
+        env:
+          TOKEN: "${{ secrets.NFT_APIKEY }}"
+        run: |
+            NFT_APIKEY="$TOKEN"
+            export NFT_APIKEY
   build:
     runs-on: ubuntu-latest
     
@@ -25,6 +35,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.5.2
 
       - name: Install aria2
         run: sudo apt update && sudo apt install aria2 -y
@@ -54,7 +67,6 @@ jobs:
         run: |
             echo "https://api.nft.storage/?limit=1000" >> "${{ env.APIURL }}"
             echo "Authorization: Bearer $TOKEN" >> "${{ env.HEADER }}"
-            chmod +x ipfs-pinner-linux-amd64
         
       - name: set up .storage package
         run: npm install nft.storage
@@ -63,14 +75,10 @@ jobs:
         run: |
             aria2c -U "${{ env.UA }}" -x16 -o "${{ env.COMPACT_FILENAME }}" "${{ env.COMPACT_URL }}"
             echo "COMPACT_SIZE=$( ls -lh "${{ env.COMPACT_FILENAME }}" | tr -s [:blank:] | cut -d ' ' -f5 )" >> $GITHUB_ENV
-            aria2c -U "${{ env.UA }}" -x16 -o "${{ env.MAIN_FILENAME }}" "${{ env.MAIN_URL }}"
-            echo "MAIN_SIZE=$( ls -lh "${{ env.MAIN_FILENAME }}" | tr -s [:blank:] | cut -d ' ' -f5 )" >> $GITHUB_ENV
+            
         
       - name: compact upload
-        run: ./ipfs-pinner-linux-amd64 -t nftstorage -u "${{ secrets.NFT_APIKEY }}" "${{ env.COMPACT_FILENAME }}"
-        
-      - name: main upload
-        run: ./ipfs-pinner-linux-amd64 -t nftstorage -u "${{ secrets.NFT_APIKEY }}" "${{ env.MAIN_FILENAME }}"
+        run: node storeBlob.mjs "${{ env.COMPACT_FILENAME }}"
         
       - name: get json of uploads
         run: curl -A "${{ env.UA }}" -o "${{ env.JSON_FILENAME }}" -H @"${{ env.HEADER }}" "$(cat ${{ env.APIURL }} )"
