@@ -4,7 +4,7 @@ import { argv } from 'node:process';
 import { env } from 'node:process';
 
 const endpoint = 'https://api.nft.storage' // the default
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDM3MmU3MTYxNzVkODM3MUM0OTYxY2M2OEE4ZDlDNWNDMGQxOTEyNDIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTYzNDc1MTA3NTM1NCwibmFtZSI6IkRCZHVtcCJ9.fANErEAfKOTP-9Szjjo2tI7QWhuY5fPO8ZtDZ30WMzk' // your API key from https://nft.storage/manage
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGU2QWY1MDBGMWJmZkJiMmFFZDBCMkE0MzY0NTMyMkQwQmM2Y0NjZWMiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY5NzM5NDkwOTAwMCwibmFtZSI6InVwIn0.AzzzIKxZNwhQRsKWMvLY01dJ8wi6GVOURrTDIaWXFOs' // your API key from https://nft.storage/manage
 
 async function main() {
   const storage = new NFTStorage({ endpoint, token })
