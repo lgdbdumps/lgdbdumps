@@ -50,6 +50,11 @@ jobs:
             echo "HEADER=header" >> $GITHUB_ENV
             echo "APIURL=apiurl" >> $GITHUB_ENV
             echo "JSON_FILENAME=stats.json" >> $GITHUB_ENV
+
+      - name: setup git config
+        run: |
+          git config user.name "LG Actions Bot"
+          git config user.email "<lg@lg.lg>"
       
       - name: write tmp files
         env:
@@ -87,6 +92,18 @@ jobs:
       - name: Upload dir listing webpage to pinning service
         run : |
           curl -X POST --data-binary @"${{ env.WEB_PAGE_OUTPUT_FILE }}" -H @"${{ env.HEADER }}" https://api.nft.storage/upload -s -o cid.json
+
+      - name: git pull
+        run: git pull
+        
+      - name: git add cid
+        run: git add -f cid.json
+        
+      - name: git commit
+        run: git commit -m "add cid.json at $(date)"
+        
+      - name: git push
+        run: git push
           
         
       - name: add webpage to ipfs and publish cid on IPNS
@@ -98,10 +115,7 @@ jobs:
       - name: update readme
         run: printf "To go to the dbdumps directory listing Click [Here](%s%s) . Updated at %s" "https://ipfs.io" "$(cat "${{ env.IPNS_HASH_OUTPUT_FILE }}" )" "$(date -I)" > README.md
         
-      - name: setup git config
-        run: |
-          git config user.name "LG Actions Bot"
-          git config user.email "<lg@lg.lg>"
+      
         
       - name: git pull
         run: git pull
