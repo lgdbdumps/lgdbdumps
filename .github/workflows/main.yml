@@ -92,19 +92,7 @@ jobs:
       - name: Upload dir listing webpage to pinning service
         run : |
           curl -X POST --data-binary @"${{ env.WEB_PAGE_OUTPUT_FILE }}" -H @"${{ env.HEADER }}" https://api.nft.storage/upload -s -o cid.json
-
-      - name: git pull
-        run: git pull
         
-      - name: git add cid
-        run: git add -f cid.json
-        
-      - name: git commit
-        run: git commit -m "add cid.json at $(date)"
-        
-      - name: git push
-        run: git push
-          
         
       - name: add webpage to ipfs and publish cid on IPNS
         run: |
